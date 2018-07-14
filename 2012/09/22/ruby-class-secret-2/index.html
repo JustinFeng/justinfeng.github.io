@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Ruby Class Secret(Part II) | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="让我们继续探索Ruby的Class ##类定义 静态语言中，类的定义给人的感觉更多是在定义一种数据结构，及该结构上的一系列行为，只有实例化一个对象的时候，其代码才真正的生效或者被执行。而Ruby则不同，class关键字之后，实际就是在执行一段普通的代码，举个例子123class MyClass  puts &apos;Hello!&apos;	# Hello!end运行该脚本，除了定义MyClass类之外，还会直接在">
+<meta name="keywords" content="ruby">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ruby Class Secret(Part II)">
+<meta property="og:url" content="http://justinfeng.github.io/2012/09/22/ruby-class-secret-2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="让我们继续探索Ruby的Class ##类定义 静态语言中，类的定义给人的感觉更多是在定义一种数据结构，及该结构上的一系列行为，只有实例化一个对象的时候，其代码才真正的生效或者被执行。而Ruby则不同，class关键字之后，实际就是在执行一段普通的代码，举个例子123class MyClass  puts &apos;Hello!&apos;	# Hello!end运行该脚本，除了定义MyClass类之外，还会直接在">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://justinfeng.github.io/images/method_finding.png">
+<meta property="og:image" content="http://justinfeng.github.io/images/method_finding_with_eigenclass.png">
+<meta property="og:image" content="http://justinfeng.github.io/images/everything.png">
+<meta property="og:updated_time" content="2018-07-14T01:51:43.873Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ruby Class Secret(Part II)">
+<meta name="twitter:description" content="让我们继续探索Ruby的Class ##类定义 静态语言中，类的定义给人的感觉更多是在定义一种数据结构，及该结构上的一系列行为，只有实例化一个对象的时候，其代码才真正的生效或者被执行。而Ruby则不同，class关键字之后，实际就是在执行一段普通的代码，举个例子123class MyClass  puts &apos;Hello!&apos;	# Hello!end运行该脚本，除了定义MyClass类之外，还会直接在">
+<meta name="twitter:image" content="http://justinfeng.github.io/images/method_finding.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://justinfeng.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-ruby-class-secret-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/09/22/ruby-class-secret-2/" class="article-date">
+  <time datetime="2012-09-22T13:30:00.000Z" itemprop="datePublished">2012-09-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Ruby Class Secret(Part II)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>让我们继续探索Ruby的Class</p>
+<p>##类定义</p>
+<p>静态语言中，类的定义给人的感觉更多是在定义一种数据结构，及该结构上的一系列行为，只有实例化一个对象的时候，其代码才真正的生效或者被执行。而Ruby则不同，<code>class</code>关键字之后，实际就是在执行一段普通的代码，举个例子<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span></span></span><br><span class="line">  puts <span class="string">'Hello!'</span>	<span class="comment"># Hello!</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure><br>运行该脚本，除了定义<code>MyClass</code>类之外，还会直接在控制台输出字符串。</p>
+<p>##类实例变量&amp;类方法</p>
+<p>先看一段代码<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span></span></span><br><span class="line">  @my_var = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">read</span></span></span><br><span class="line">    @my_var</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure><br>大家一定要注意<code>@my_var</code>可不是这个类的对象的实例变量，而是<code>MyClass</code>类的实例变量。实例变量的归属取决于上下文，在<code>class</code>关键字后，<code>self</code>所代表的当前对象是<code>MyClass</code>，<strong>类也是对象</strong>。也许你会觉得类实例变量类似于Java中的静态成员，但事实并非如此，类实例变量与对象实例变量处于完全不同的两个上下文，普通的对象无法访问类实例变量，但Java中类的对象可以访问类的静态成员（Ruby中类似的概念应该是<code>@@</code>开头的变量，但这种变量不推荐使用）。再进一步，类实例变量完全是该类独有的，即使是该类的子类也看不到这个变量。</p>
+<p><code>MyClass</code>中定义的<code>read</code>方法也不是普通的实例方法，而是类方法，由于类方法的方法体内处于类的上下文中，可以访问到类实例变量。</p>
+<p>##单件方法</p>
+<p>Ruby允许你为某个具体对象添加一个方法，这种方法即为单件方法，定义单件方法的方式如下<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">str = <span class="string">"just a regular string"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">str</span>.<span class="title">title?</span></span></span><br><span class="line">  <span class="keyword">self</span>.upcase == <span class="keyword">self</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">str.title?	<span class="comment"># false</span></span><br></pre></td></tr></table></figure><br>其实上节中的类方法也是一个单件方法，与上面的例子稍有不同的是，该方法添加在了一个类上，这里又要强调了，<strong>类也是对象</strong>，因此本质是完全一样的。类方法的一个应用就是在<code>Module</code>中定义的访问器（attr_accessor等）。</p>
+<p>##终极藏宝图</p>
+<p>引入了单件方法的概念后，我们有必要重新审视一下类与对象的关系图，单件方法应该存在于哪里呢<br><img src="/images/method_finding.png" alt="class_and_object_3"></p>
+<p>看来类的真相<a href="!--￼4--" title="Ruby类的真相(上)">上篇</a>。中获得的藏宝图并不全，Ruby刻意隐藏了一些内幕，让我们发掘发掘，单件方法在哪里呢？答案是eigenclass。每一个对象对应一个特有的隐藏类，这个类就是eigenclass，该类只有一个实例，且不能被继承，单件方法就存在于eigenclass中，后续表述中将一个对象<code>obj</code>对应eigenclass记为<code>#obj</code>。以下面的代码为例<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">a_method</span></span></span><br><span class="line">    <span class="string">'C#a_method'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">a_class_method</span></span></span><br><span class="line">    <span class="string">'C.a_class_method'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span> &lt; C;</span> <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">obj = D.new</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">obj</span>.<span class="title">a_singleton_method</span></span></span><br><span class="line">  <span class="string">'obj#a_singleton_method'</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure><br>当方法查找过程向一个对象索要类时，你首先得到的是该对象的eigenclass，如果eigenclass中没有要调用的方法才会继续沿着原有祖先链向上查找<br><img src="/images/method_finding_with_eigenclass.png" alt="class_and_object_4"></p>
+<p>调用一个类的类方法时，方法查找的过程也类似，首先会向右一步进入该类的eigenclass，再向上，这里还有一个知识点就是<strong>eigenclass的超类就是超类的eigenclass</strong>，完整藏宝图如下<br><img src="/images/everything.png" alt="class_and_object_5"></p>
+<p>##心法口诀</p>
+<p>总结一下类的真相，共有7招：  </p>
+<ol>
+<li>只有一种对象——要么是普通对象，要么是模块、类；        </li>
+<li>只有一种模块——可以是普通模块、类、eigenclass；           </li>
+<li>只有一个方法，它存在于一种模块中——通常是类中；          </li>
+<li>每个对象（包括类）都有自己的“真正的类”——要么是普通类，要么是eigenclass；        </li>
+<li>除了BasicObject类无超类外，每个类有且只有一个超类。这意味着从任何类只有一条向上直到BasicObject的祖先链；      </li>
+<li>一个对象的eigenclass的超类是这个对象的类；一个类的eigenclass的超类是这个类的超类的eigenclass；        </li>
+<li>当调用一个方法，Ruby先向“右”迈一步进入接收者真正的类，然后向“上”进入祖先链。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2012/09/22/ruby-class-secret-2/" data-id="cjin9dw2g00036utn3h34tprl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2012/10/29/rspec-matchers/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          RSpec Matchers
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2012/09/06/ruby-class-secret-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Ruby Class Secret(Part I)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/email/">email</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geolocation/">geolocation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html5/">html5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/markdown/">markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-server/">web server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-worker/">web_worker</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/email/" style="font-size: 10px;">email</a> <a href="/tags/geolocation/" style="font-size: 10px;">geolocation</a> <a href="/tags/html/" style="font-size: 10px;">html</a> <a href="/tags/html5/" style="font-size: 15px;">html5</a> <a href="/tags/markdown/" style="font-size: 10px;">markdown</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 20px;">ruby</a> <a href="/tags/web-server/" style="font-size: 10px;">web server</a> <a href="/tags/web-worker/" style="font-size: 10px;">web_worker</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/10/">October 2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/09/">September 2012</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/06/21/goliath-non-blocking-ruby-web-server-framework/">Goliath - Non Blocking Ruby Web Server Framework</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/06/html5-geolocation-in-china/">HTML5 Geolocation in China</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/05/html5-web-worker/">HTML5 - Web Worker</a>
+          </li>
+        
+          <li>
+            <a href="/2013/04/25/image-overlap-in-email/">Image Overlap in Email</a>
+          </li>
+        
+          <li>
+            <a href="/2012/10/29/rspec-matchers/">RSpec Matchers</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Justin Feng<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

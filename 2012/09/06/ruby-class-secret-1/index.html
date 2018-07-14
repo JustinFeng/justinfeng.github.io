@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Ruby Class Secret(Part I) | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
+<meta name="keywords" content="ruby">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ruby Class Secret(Part I)">
+<meta property="og:url" content="http://justinfeng.github.io/2012/09/06/ruby-class-secret-1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://justinfeng.github.io/images/var_in_object.png">
+<meta property="og:image" content="http://justinfeng.github.io/images/class_is_object.png">
+<meta property="og:image" content="http://justinfeng.github.io/images/method_finding.png">
+<meta property="og:updated_time" content="2018-07-14T01:50:49.600Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ruby Class Secret(Part I)">
+<meta name="twitter:description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
+<meta name="twitter:image" content="http://justinfeng.github.io/images/var_in_object.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://justinfeng.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-ruby-class-secret-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/09/06/ruby-class-secret-1/" class="article-date">
+  <time datetime="2012-09-06T13:25:00.000Z" itemprop="datePublished">2012-09-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Ruby Class Secret(Part I)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。</p>
+<p>因此在这里想跟大家分享一点Ruby语言的<strong>元编程</strong>特性，特别是Ruby类背后的故事。</p>
+<p>##打开类</p>
+<p>关于打开类，先看一个简单的例子<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Fijo</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">x</span>;</span> <span class="string">'x'</span>; <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Fijo</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">y</span>;</span> <span class="string">'y'</span>; <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">obj = Fijo.new</span><br><span class="line">obj.x 	<span class="comment"># 'x'</span></span><br><span class="line">obj.y 	<span class="comment"># 'y'</span></span><br></pre></td></tr></table></figure></p>
+<p>上面是一个最简单的打开类的实例，你可以将第一个<code>class</code>认为是定义一个不存在的类，但怎么理解第二个<code>class</code>的工作方式呢？</p>
+<p>从某种意义上来说Ruby的<code>class</code>关键字更像是一个作用域操作符，而不是一个类型声明语句。它的确可以创建一个不存在的类，但对于<code>class</code>关键字，其核心任务是将你带到<strong>类的上下文</strong>中，让你可以修改类的行为。</p>
+<p>如果你的工作中仅使用一些静态语言，如Java, C++等，打开类这样的特性一定让你感到耳目一新。但我不得不将你拉回现实，事物都有两面性，打开类也会引发严重的问题，<strong>猴子补丁</strong>就是其中之一，有兴趣的童鞋可以Google之。</p>
+<p>##对象中有什么</p>
+<p>先来一段code<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">my_method</span></span></span><br><span class="line">    @v=<span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">obj=MyClass.new</span><br><span class="line">obj.my_method</span><br></pre></td></tr></table></figure><br>与其他静态语言不同，Ruby中类的实例并不会在初始化时获得所有的实例变量，而仅在对某实例变量赋值后才会生成，以上面的代码为例，<code>obj</code>在被初始化时还没有实例变量<code>@v</code>，但执行<code>my_method</code>后，<code>@v</code>就生成了。</p>
+<p>而实例方法则不同，它们存在与对象所属的类中。这里有一个概念，就是一个对象的方法称为其类的实例方法。相应的关系可以用下图来描述，后续关于Ruby类故事的主线就是对这个图的演进：<br><img src="/images/var_in_object.png" alt="class_and_object_1"></p>
+<p>##类也是对象</p>
+<p>类也是对象，类的类是<code>Class</code>，因此所有适用于对象的的规则，也同样适用于类。既然一个对象的方法是其类的实例方法，这就意味着一个类的方法是<code>Class</code>的实例方法（至少目前可以仅仅这样理解:)）。</p>
+<p>另外，虽然可能会让你有些混乱，但还是要将类关系补充完整，在继承关系中，<code>Class</code>的父类是<code>Module</code>，<code>Module</code>的父类是<code>Object</code>，<code>Object</code>的类是<code>Class</code>，<code>Class</code>的类是其自身。<br><img src="/images/class_is_object.png" alt="class_and_object_2"></p>
+<p>##方法查找</p>
+<p>当一个对象调用一个方法时，首先需要做的就是方法查找，为了了解方法查找的过程，需要先了解两个概念：<strong>接收者</strong>和<strong>祖先链</strong>。<strong>接收者</strong>就是调用方法的那个对象；<strong>祖先链</strong>则是从对象的类到<code>Object</code>的类路径。</p>
+<p>方法查找的过程就是首先在对象所在类中查找被调用的方法，如果无法找到则在一层层的祖先链中查找，如果直到<code>Object</code>都无法找到对应的方法，则会调用神奇的<code>method_missing</code>方法。这个方法查找的过程可以总结为“向右一步，再向上”。<br><img src="/images/method_finding.png" alt="class_and_object_3"></p>
+<p>这里需要额外说明一点，这里的祖先链也包括模块，一个类所包含的模块会被插入到祖先链中该类与超类（或模块）之间。</p>
+<hr>
+<p>到这里已经介绍了对于Ruby类与对象的基本知识，但进一步的内容还请移步<a href="!--￼2--" title="Ruby类的真相(下)">下篇</a>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2012/09/06/ruby-class-secret-1/" data-id="cjin9dw2a00016utn9qpdyp81" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2012/09/22/ruby-class-secret-2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Ruby Class Secret(Part II)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2012/09/02/markdown-grammar-summary/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Markdown Grammar Summary</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/email/">email</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geolocation/">geolocation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html5/">html5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/markdown/">markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-server/">web server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-worker/">web_worker</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/email/" style="font-size: 10px;">email</a> <a href="/tags/geolocation/" style="font-size: 10px;">geolocation</a> <a href="/tags/html/" style="font-size: 10px;">html</a> <a href="/tags/html5/" style="font-size: 15px;">html5</a> <a href="/tags/markdown/" style="font-size: 10px;">markdown</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 20px;">ruby</a> <a href="/tags/web-server/" style="font-size: 10px;">web server</a> <a href="/tags/web-worker/" style="font-size: 10px;">web_worker</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/10/">October 2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/09/">September 2012</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/06/21/goliath-non-blocking-ruby-web-server-framework/">Goliath - Non Blocking Ruby Web Server Framework</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/06/html5-geolocation-in-china/">HTML5 Geolocation in China</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/05/html5-web-worker/">HTML5 - Web Worker</a>
+          </li>
+        
+          <li>
+            <a href="/2013/04/25/image-overlap-in-email/">Image Overlap in Email</a>
+          </li>
+        
+          <li>
+            <a href="/2012/10/29/rspec-matchers/">RSpec Matchers</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Justin Feng<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

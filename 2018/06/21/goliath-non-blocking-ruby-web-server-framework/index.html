@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Goliath - Non Blocking Ruby Web Server Framework | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Ruby世界有很多成熟的Web Server供开发者选择，这些App Server在功能上各具特色，都有各自适合的应用场景。但如果从并发方式的角度来分类的话，大体可以分为两类：一类是基于进程和线程的并发模式，典型的Web Server包括Unicorn, Rainbows和Puma等；另一类是基于Non-Blocking Event Loop的并发方式，代表Web Server有Thin和Goli">
+<meta name="keywords" content="ruby,web server">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Goliath - Non Blocking Ruby Web Server Framework">
+<meta property="og:url" content="http://justinfeng.github.io/2018/06/21/goliath-non-blocking-ruby-web-server-framework/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Ruby世界有很多成熟的Web Server供开发者选择，这些App Server在功能上各具特色，都有各自适合的应用场景。但如果从并发方式的角度来分类的话，大体可以分为两类：一类是基于进程和线程的并发模式，典型的Web Server包括Unicorn, Rainbows和Puma等；另一类是基于Non-Blocking Event Loop的并发方式，代表Web Server有Thin和Goli">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-07-14T01:57:46.688Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Goliath - Non Blocking Ruby Web Server Framework">
+<meta name="twitter:description" content="Ruby世界有很多成熟的Web Server供开发者选择，这些App Server在功能上各具特色，都有各自适合的应用场景。但如果从并发方式的角度来分类的话，大体可以分为两类：一类是基于进程和线程的并发模式，典型的Web Server包括Unicorn, Rainbows和Puma等；另一类是基于Non-Blocking Event Loop的并发方式，代表Web Server有Thin和Goli">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://justinfeng.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-goliath-non-blocking-ruby-web-server-framework" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/21/goliath-non-blocking-ruby-web-server-framework/" class="article-date">
+  <time datetime="2018-06-20T15:21:23.558Z" itemprop="datePublished">2018-06-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Goliath - Non Blocking Ruby Web Server Framework
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Ruby世界有很多成熟的Web Server供开发者选择，这些App Server在功能上各具特色，都有各自适合的应用场景。但如果从并发方式的角度来分类的话，大体可以分为两类：一类是基于进程和线程的并发模式，典型的Web Server包括<a href="https://rubygems.org/gems/unicorn" target="_blank" rel="noopener">Unicorn</a>, <a href="https://rubygems.org/gems/rainbows" target="_blank" rel="noopener">Rainbows</a>和<a href="https://rubygems.org/gems/puma" target="_blank" rel="noopener">Puma</a>等；另一类是基于Non-Blocking Event Loop的并发方式，代表Web Server有<a href="https://rubygems.org/gems/thin" target="_blank" rel="noopener">Thin</a>和<a href="https://rubygems.org/gems/goliath" target="_blank" rel="noopener">Goliath</a>。</p>
+<h2 id="进程和线程并发"><a href="#进程和线程并发" class="headerlink" title="进程和线程并发"></a>进程和线程并发</h2><p>这种类型的Ruby Web Server主要通过操作系统级别的并发方式实现Web请求的并行处理，对于进程并发的Web Server，每个请求由一个VM进程独立处理，如果Web Server支持在每个进程中动态创建多个线程来处理Web请求，就构成了线程并发类型的Web Server。对于进程线程类Web Server的并发能力的估算可以简化为：<code>Number of Processes * Number of Threads</code>。</p>
+<p>下面列出了此类Web Server的中比较流行的几个：</p>
+<ul>
+<li>单进程：WeBrick</li>
+<li>多进程单线程：Unicorn</li>
+<li>多进程多线程：Rainbows，Puma</li>
+</ul>
+<p>这类Web Server在并发较低，I/O操作较少的场景下是可以很好的满足要求的，但在I/O操作耗时较长的场景下往往难以支持较高的并发量。</p>
+<h2 id="EventMachine"><a href="#EventMachine" class="headerlink" title="EventMachine"></a>EventMachine</h2><p>要提到Non-Blocking并发就不得不提到<a href="https://github.com/eventmachine/eventmachine" target="_blank" rel="noopener">EventMachine</a>，前面提到的Thin和Goliath都是基于它开发的。</p>
+<p>简单来说，EventMachine是一个事件驱动的轻量级并发库，其事件驱动的本质上就是Reactor Pattern，其他语言中类似的实现包括JBoss Netty，Python Twisted以及Node.js。</p>
+<p>下面是一个EventMachine异步HTTP请求的栗子</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'eventmachine'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'em-http'</span></span><br><span class="line"> </span><br><span class="line">EM.run &#123;</span><br><span class="line">  EM::HttpRequest.new(<span class="string">'http://www.sitepoint.com/'</span>).get.callback &#123;<span class="params">|http|</span></span><br><span class="line">    puts http.response</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>EM::run</code>的执行会初始化一个EventMachine Reactor，这个操作会持续阻塞当前线程，除非有<code>EM::stop</code>之类的命令被执行。在传入的Block中，可以使用基于EM的异步I/O库来完成业务逻辑。</p>
+<p>这个例子中我们发起了一个Http请求并打印Response，与传统<code>Httparty#get</code>的方式不同，<code>EM::HttpRequest#get</code>不会阻塞线程，系统资源可以继续被用于处理其他任务，当请求返回时<code>callback</code>方法传入的Block会被Event Loop回调，从而继续处理当前的业务逻辑。</p>
+<h2 id="Goliath"><a href="#Goliath" class="headerlink" title="Goliath"></a>Goliath</h2><p>Goliath就是基于上述的EventMachine实现的Non-Blocking Ruby Web Server Framework，Goliath官方提供的性能测试结果表示其性能与Node.js相当，可以达到3000 req/s的并发处理能力。</p>
+<p>下面是一个使用Goliath实现的API服务</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'goliath'</span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span> &lt; Goliath::API</span></span><br><span class="line">  <span class="comment"># default to JSON output, allow Yaml as secondary</span></span><br><span class="line">  use Goliath::Rack::Render, [<span class="string">'json'</span>, <span class="string">'yaml'</span>]</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">response</span><span class="params">(env)</span></span></span><br><span class="line">    [<span class="number">200</span>, &#123;&#125;, <span class="string">"Hello World"</span>]</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>Goliath除了直接作为API开发框架之外，还可以作为中间件与其他API框架（如Grape API）结合使用。</p>
+<h3 id="Non-Callback异步执行"><a href="#Non-Callback异步执行" class="headerlink" title="Non-Callback异步执行"></a>Non-Callback异步执行</h3><p>Goliath另外一个重要的亮点就是Non-Callback事件驱动，试想一个嵌套Http请求的业务场景，基于EM你会写出如下的代码：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">EM::HttpRequest.new(<span class="string">'http://www.sitepoint.com/'</span>).get.callback &#123;<span class="params">|http|</span></span><br><span class="line">  <span class="comment"># extract_next_url is a fake method, you get the idea</span></span><br><span class="line">  url = extract_next_url(http.response)</span><br><span class="line"> </span><br><span class="line">  EM::HttpRequest.new(url).get.callback &#123;<span class="params">|http2|</span></span><br><span class="line">    puts http2.response</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然熟悉JS程序猿可能已经习惯了<code>callback</code>风格的代码，但在类似复杂的情况下，<code>callback</code>的反直觉语法仍然会给代码可读性和可维护性带来问题</p>
+<p>但如果你在使用Goliash开发，则不会再有这样的烦恼：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http = EM::HttpRequest.new(<span class="string">"http://www.sitepoint.com"</span>).get</span><br><span class="line"><span class="comment"># extract_next_url is a fake method, you get the idea</span></span><br><span class="line">url = extract_next_url(http.response)</span><br><span class="line">http2 = EM::HttpRequest.new(url).get</span><br></pre></td></tr></table></figure>
+<p>上面的代码片段实现了以同步的风格编写代码，但两个Http请求却是通过异步的方式执行的。What!?，要想了解这里发生了什么神奇的事情，还要从Ruby <code>Fiber</code>说起。</p>
+<h3 id="Fiber"><a href="#Fiber" class="headerlink" title="Fiber"></a>Fiber</h3><p>Fiber是Ruby 1.9.3版本引入的协作式并发机制，引用一下官方说明</p>
+<blockquote>
+<p>Fibers are primitives for implementing light weight cooperative concurrency in Ruby. Basically they are a means of creating code blocks that can be paused and resumed, much like threads. The main difference is that they are never preempted and that the scheduling must be done by the programmer and not the VM.</p>
+</blockquote>
+<p>简单来说，<code>Thread</code>是系统级别的概念，其运行是VM通过抢占式的调度实现的，而<code>Fiber</code>是一种协程（coroutine）的概念，一个<code>Fiber</code>何时获得系统资源是由程序猿控制的。下面这个栗子可以帮助你回顾/了解一下<code>Fiber</code>是怎么工作的：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">fiber = Fiber.new <span class="keyword">do</span> <span class="params">|first|</span></span><br><span class="line">  second = Fiber.<span class="keyword">yield</span> first + <span class="number">2</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">puts fiber.resume <span class="number">10</span></span><br><span class="line">puts fiber.resume <span class="number">14</span></span><br><span class="line">puts fiber.resume <span class="number">18</span></span><br></pre></td></tr></table></figure>
+<p>outputs</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">12</span><br><span class="line">14</span><br><span class="line">FiberError: dead fiber called</span><br></pre></td></tr></table></figure>
+<p>如果你已经了解了<code>Fiber</code>是如何工作的，我们可以来看看Goliath中是如何使用<code>Fiber</code>实现Non-Callback异步执行的</p>
+<h3 id="EM-Synchrony"><a href="#EM-Synchrony" class="headerlink" title="EM-Synchrony"></a>EM-Synchrony</h3><p><a href="https://github.com/igrigorik/em-synchrony" target="_blank" rel="noopener">EM-Synchrony</a>是Goliath项目的一个重要组成部分。EM-Synchrony使用Fiber改造了EventMachine以及基于EventMachine实现的许多异步I/O库，使程序猿可以以同步的代码风格实现异步的功能。</p>
+<p>每一个Goliath服务都只有一个线程，但每个用户request都是在一个独立的<code>Fiber</code>中处理的，我们可以看看之前的<code>EM::HttpRequest</code>究竟是如何实现的：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># em-synchrony/lib/em-synchrony/em-http.rb</span></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">  <span class="keyword">require</span> <span class="string">"em-http-request"</span></span><br><span class="line"><span class="keyword">rescue</span> LoadError =&gt; error</span><br><span class="line">  raise <span class="string">"Missing EM-Synchrony dependency: gem install em-http-request"</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">module</span> <span class="title">EventMachine</span></span></span><br><span class="line">  <span class="class"><span class="keyword">module</span> <span class="title">HTTPMethods</span></span></span><br><span class="line">     <span class="string">%w[get head post delete put patch options]</span>.each <span class="keyword">do</span> <span class="params">|type|</span></span><br><span class="line">       class_eval <span class="string">%[</span></span><br><span class="line"><span class="string">         alias :a<span class="subst">#&#123;type&#125;</span> :<span class="subst">#&#123;type&#125;</span></span></span><br><span class="line"><span class="string">         def <span class="subst">#&#123;type&#125;</span>(options = &#123;&#125;, &amp;blk)</span></span><br><span class="line"><span class="string">           f = Fiber.current</span></span><br><span class="line"><span class="string">           conn = setup_request(:<span class="subst">#&#123;type&#125;</span>, options, &amp;blk)</span></span><br><span class="line"><span class="string">           if conn.error.nil?</span></span><br><span class="line"><span class="string">             conn.callback &#123; f.resume(conn) &#125;</span></span><br><span class="line"><span class="string">             conn.errback  &#123; f.resume(conn) &#125;</span></span><br><span class="line"><span class="string">             Fiber.yield</span></span><br><span class="line"><span class="string">           else</span></span><br><span class="line"><span class="string">             conn</span></span><br><span class="line"><span class="string">           end</span></span><br><span class="line"><span class="string">         end</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>ah~, Monkey Patch，在<code>get</code>方法新的实现中，<code>callback</code>会<code>resume</code>相应的<code>Fiber</code>，从而使得处理该用户请求的<code>Fiber</code>重新获得系统资源，并在之前调用<code>get</code>方法的地方继续执行。这样对程序猿来说就只需要以同步的方式编写业务代码即可。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2018/06/21/goliath-non-blocking-ruby-web-server-framework/" data-id="cjin9dw2r000b6utnkmruhaf9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web-server/">web server</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/05/06/html5-geolocation-in-china/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">HTML5 Geolocation in China</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/email/">email</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geolocation/">geolocation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html5/">html5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/markdown/">markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-server/">web server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-worker/">web_worker</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/email/" style="font-size: 10px;">email</a> <a href="/tags/geolocation/" style="font-size: 10px;">geolocation</a> <a href="/tags/html/" style="font-size: 10px;">html</a> <a href="/tags/html5/" style="font-size: 15px;">html5</a> <a href="/tags/markdown/" style="font-size: 10px;">markdown</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 20px;">ruby</a> <a href="/tags/web-server/" style="font-size: 10px;">web server</a> <a href="/tags/web-worker/" style="font-size: 10px;">web_worker</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/10/">October 2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/09/">September 2012</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/06/21/goliath-non-blocking-ruby-web-server-framework/">Goliath - Non Blocking Ruby Web Server Framework</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/06/html5-geolocation-in-china/">HTML5 Geolocation in China</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/05/html5-web-worker/">HTML5 - Web Worker</a>
+          </li>
+        
+          <li>
+            <a href="/2013/04/25/image-overlap-in-email/">Image Overlap in Email</a>
+          </li>
+        
+          <li>
+            <a href="/2012/10/29/rspec-matchers/">RSpec Matchers</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Justin Feng<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

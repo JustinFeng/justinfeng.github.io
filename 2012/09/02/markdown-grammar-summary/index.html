@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Markdown Grammar Summary | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Markdown的最初目标是让网络上的阅读和写作都更加方便快捷。所有的Markdown符号都使用的标点符号，可以说它是一个专门用于网络写作的技术，这个博客就是使用Markdown来编写的。 Markdown主要涵盖了Html中文本相关的功能，如果希望在Markdown中使用其他更加绚丽的表现方式，最简单的方法就是直接内联嵌入Html代码。这里提醒一点，对于\、\、\和\，必须在标签的前后保留空格，">
+<meta name="keywords" content="markdown">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Markdown Grammar Summary">
+<meta property="og:url" content="http://justinfeng.github.io/2012/09/02/markdown-grammar-summary/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Markdown的最初目标是让网络上的阅读和写作都更加方便快捷。所有的Markdown符号都使用的标点符号，可以说它是一个专门用于网络写作的技术，这个博客就是使用Markdown来编写的。 Markdown主要涵盖了Html中文本相关的功能，如果希望在Markdown中使用其他更加绚丽的表现方式，最简单的方法就是直接内联嵌入Html代码。这里提醒一点，对于\、\、\和\，必须在标签的前后保留空格，">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-06-20T15:21:23.554Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Markdown Grammar Summary">
+<meta name="twitter:description" content="Markdown的最初目标是让网络上的阅读和写作都更加方便快捷。所有的Markdown符号都使用的标点符号，可以说它是一个专门用于网络写作的技术，这个博客就是使用Markdown来编写的。 Markdown主要涵盖了Html中文本相关的功能，如果希望在Markdown中使用其他更加绚丽的表现方式，最简单的方法就是直接内联嵌入Html代码。这里提醒一点，对于\、\、\和\，必须在标签的前后保留空格，">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://justinfeng.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-markdown-grammar-summary" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/09/02/markdown-grammar-summary/" class="article-date">
+  <time datetime="2012-09-02T10:40:00.000Z" itemprop="datePublished">2012-09-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Markdown Grammar Summary
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Markdown的最初目标是让网络上的阅读和写作都更加方便快捷。所有的Markdown符号都使用的标点符号，可以说它是一个专门用于网络写作的技术，这个博客就是使用Markdown来编写的。</p>
+<p>Markdown主要涵盖了Html中文本相关的功能，如果希望在Markdown中使用其他更加绚丽的表现方式，最简单的方法就是直接内联嵌入Html代码。这里提醒一点，对于\<div>、\<table>、\<pre>和\<p>，必须在标签的前后保留空格，便于Markdown的解释器辨识，但这些标签中不能再嵌入Markdown代码。  </p>
+<p>##换行</p>
+<p>在行末增加2个以上的空格可以实现换行</p>
+<p>##标题</p>
+<p>行首插入<code>#</code>来创建标题，<code>#</code>个数决定标题级别</p>
+<pre><code># This is H1
+## This is H2
+</code></pre><p>##引用</p>
+<p>在行首加入<code>&gt;</code>来创建引用，引用中还可以创建其他Markdown标记，甚至是引用</p>
+<pre><code>&gt; Quote block
+</code></pre><p>##列表</p>
+<p>使用<code>*</code>创建无序列表，使用数字加英文句号<code>x.</code>创建有序列表，注意这里列表符号和文字内容之间要有2个空格</p>
+<pre><code>*  ul
+1.  ol
+</code></pre><p>##代码</p>
+<p>使用tab创建一个代码片段（No example）</p>
+<p>##行内代码</p>
+<p>使用撇号<code>`</code>包围内容创建行内的代码块</p>
+<pre><code>Try this `code` on your console
+</code></pre><p>##分割线</p>
+<p>使用3个或以上的减号<code>---</code>创建一个分割线</p>
+<pre><code>---
+</code></pre><p>##链接</p>
+<p>方括号内是链接文字，小括号内是url，双引号内是链接的提示</p>
+<pre><code>[JustinFeng](http://justinfeng.github.io/ &quot;Blog&quot;)
+</code></pre><p>##直接链接</p>
+<p>使用尖括号包围url创建直接链接</p>
+<pre><code>&lt;http://justinfeng.github.io&gt;
+</code></pre><p>##强调</p>
+<p>单<code>*</code>包围实现强调，双<code>**</code>包围实现加粗</p>
+<pre><code>*emphasis*
+**strong**
+</code></pre><p>##图片</p>
+<p>使用下面格式创建一个图片</p>
+<pre><code>![Alt text](/path/to/img.jpg)
+</code></pre><p>##转义</p>
+<p>在使用Markdown时如果需要使用特殊符号，同样可以使用<code>\</code>进行转义处理</p>
+<p>##写在最后</p>
+<p>本文以简洁的方式列出了Markdown中最常用的标记和语法，目的是让读者<strong>快速上手</strong>，或者进行<strong>速查</strong>。完整内容请深入学习<a href="http://daringfireball.net/projects/markdown/syntax" title="Markdown" target="_blank" rel="noopener">Markdown</a></p>
+</pre></table></div></p>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2012/09/02/markdown-grammar-summary/" data-id="cjin9dw2400006utnlta00d1k" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/markdown/">markdown</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2012/09/06/ruby-class-secret-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Ruby Class Secret(Part I)
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/email/">email</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geolocation/">geolocation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html5/">html5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/markdown/">markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-server/">web server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-worker/">web_worker</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/email/" style="font-size: 10px;">email</a> <a href="/tags/geolocation/" style="font-size: 10px;">geolocation</a> <a href="/tags/html/" style="font-size: 10px;">html</a> <a href="/tags/html5/" style="font-size: 15px;">html5</a> <a href="/tags/markdown/" style="font-size: 10px;">markdown</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 20px;">ruby</a> <a href="/tags/web-server/" style="font-size: 10px;">web server</a> <a href="/tags/web-worker/" style="font-size: 10px;">web_worker</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/10/">October 2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/09/">September 2012</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/06/21/goliath-non-blocking-ruby-web-server-framework/">Goliath - Non Blocking Ruby Web Server Framework</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/06/html5-geolocation-in-china/">HTML5 Geolocation in China</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/05/html5-web-worker/">HTML5 - Web Worker</a>
+          </li>
+        
+          <li>
+            <a href="/2013/04/25/image-overlap-in-email/">Image Overlap in Email</a>
+          </li>
+        
+          <li>
+            <a href="/2012/10/29/rspec-matchers/">RSpec Matchers</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Justin Feng<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

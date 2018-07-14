@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://justinfeng.github.io/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:locale" content="default">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://justinfeng.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-goliath-non-blocking-ruby-web-server-framework" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/21/goliath-non-blocking-ruby-web-server-framework/" class="article-date">
+  <time datetime="2018-06-20T15:21:23.558Z" itemprop="datePublished">2018-06-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/21/goliath-non-blocking-ruby-web-server-framework/">Goliath - Non Blocking Ruby Web Server Framework</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Ruby世界有很多成熟的Web Server供开发者选择，这些App Server在功能上各具特色，都有各自适合的应用场景。但如果从并发方式的角度来分类的话，大体可以分为两类：一类是基于进程和线程的并发模式，典型的Web Server包括<a href="https://rubygems.org/gems/unicorn" target="_blank" rel="noopener">Unicorn</a>, <a href="https://rubygems.org/gems/rainbows" target="_blank" rel="noopener">Rainbows</a>和<a href="https://rubygems.org/gems/puma" target="_blank" rel="noopener">Puma</a>等；另一类是基于Non-Blocking Event Loop的并发方式，代表Web Server有<a href="https://rubygems.org/gems/thin" target="_blank" rel="noopener">Thin</a>和<a href="https://rubygems.org/gems/goliath" target="_blank" rel="noopener">Goliath</a>。</p>
+<h2 id="进程和线程并发"><a href="#进程和线程并发" class="headerlink" title="进程和线程并发"></a>进程和线程并发</h2><p>这种类型的Ruby Web Server主要通过操作系统级别的并发方式实现Web请求的并行处理，对于进程并发的Web Server，每个请求由一个VM进程独立处理，如果Web Server支持在每个进程中动态创建多个线程来处理Web请求，就构成了线程并发类型的Web Server。对于进程线程类Web Server的并发能力的估算可以简化为：<code>Number of Processes * Number of Threads</code>。</p>
+<p>下面列出了此类Web Server的中比较流行的几个：</p>
+<ul>
+<li>单进程：WeBrick</li>
+<li>多进程单线程：Unicorn</li>
+<li>多进程多线程：Rainbows，Puma</li>
+</ul>
+<p>这类Web Server在并发较低，I/O操作较少的场景下是可以很好的满足要求的，但在I/O操作耗时较长的场景下往往难以支持较高的并发量。</p>
+<h2 id="EventMachine"><a href="#EventMachine" class="headerlink" title="EventMachine"></a>EventMachine</h2><p>要提到Non-Blocking并发就不得不提到<a href="https://github.com/eventmachine/eventmachine" target="_blank" rel="noopener">EventMachine</a>，前面提到的Thin和Goliath都是基于它开发的。</p>
+<p>简单来说，EventMachine是一个事件驱动的轻量级并发库，其事件驱动的本质上就是Reactor Pattern，其他语言中类似的实现包括JBoss Netty，Python Twisted以及Node.js。</p>
+<p>下面是一个EventMachine异步HTTP请求的栗子</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'eventmachine'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'em-http'</span></span><br><span class="line"> </span><br><span class="line">EM.run &#123;</span><br><span class="line">  EM::HttpRequest.new(<span class="string">'http://www.sitepoint.com/'</span>).get.callback &#123;<span class="params">|http|</span></span><br><span class="line">    puts http.response</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>EM::run</code>的执行会初始化一个EventMachine Reactor，这个操作会持续阻塞当前线程，除非有<code>EM::stop</code>之类的命令被执行。在传入的Block中，可以使用基于EM的异步I/O库来完成业务逻辑。</p>
+<p>这个例子中我们发起了一个Http请求并打印Response，与传统<code>Httparty#get</code>的方式不同，<code>EM::HttpRequest#get</code>不会阻塞线程，系统资源可以继续被用于处理其他任务，当请求返回时<code>callback</code>方法传入的Block会被Event Loop回调，从而继续处理当前的业务逻辑。</p>
+<h2 id="Goliath"><a href="#Goliath" class="headerlink" title="Goliath"></a>Goliath</h2><p>Goliath就是基于上述的EventMachine实现的Non-Blocking Ruby Web Server Framework，Goliath官方提供的性能测试结果表示其性能与Node.js相当，可以达到3000 req/s的并发处理能力。</p>
+<p>下面是一个使用Goliath实现的API服务</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'goliath'</span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span> &lt; Goliath::API</span></span><br><span class="line">  <span class="comment"># default to JSON output, allow Yaml as secondary</span></span><br><span class="line">  use Goliath::Rack::Render, [<span class="string">'json'</span>, <span class="string">'yaml'</span>]</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">response</span><span class="params">(env)</span></span></span><br><span class="line">    [<span class="number">200</span>, &#123;&#125;, <span class="string">"Hello World"</span>]</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>Goliath除了直接作为API开发框架之外，还可以作为中间件与其他API框架（如Grape API）结合使用。</p>
+<h3 id="Non-Callback异步执行"><a href="#Non-Callback异步执行" class="headerlink" title="Non-Callback异步执行"></a>Non-Callback异步执行</h3><p>Goliath另外一个重要的亮点就是Non-Callback事件驱动，试想一个嵌套Http请求的业务场景，基于EM你会写出如下的代码：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">EM::HttpRequest.new(<span class="string">'http://www.sitepoint.com/'</span>).get.callback &#123;<span class="params">|http|</span></span><br><span class="line">  <span class="comment"># extract_next_url is a fake method, you get the idea</span></span><br><span class="line">  url = extract_next_url(http.response)</span><br><span class="line"> </span><br><span class="line">  EM::HttpRequest.new(url).get.callback &#123;<span class="params">|http2|</span></span><br><span class="line">    puts http2.response</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然熟悉JS程序猿可能已经习惯了<code>callback</code>风格的代码，但在类似复杂的情况下，<code>callback</code>的反直觉语法仍然会给代码可读性和可维护性带来问题</p>
+<p>但如果你在使用Goliash开发，则不会再有这样的烦恼：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http = EM::HttpRequest.new(<span class="string">"http://www.sitepoint.com"</span>).get</span><br><span class="line"><span class="comment"># extract_next_url is a fake method, you get the idea</span></span><br><span class="line">url = extract_next_url(http.response)</span><br><span class="line">http2 = EM::HttpRequest.new(url).get</span><br></pre></td></tr></table></figure>
+<p>上面的代码片段实现了以同步的风格编写代码，但两个Http请求却是通过异步的方式执行的。What!?，要想了解这里发生了什么神奇的事情，还要从Ruby <code>Fiber</code>说起。</p>
+<h3 id="Fiber"><a href="#Fiber" class="headerlink" title="Fiber"></a>Fiber</h3><p>Fiber是Ruby 1.9.3版本引入的协作式并发机制，引用一下官方说明</p>
+<blockquote>
+<p>Fibers are primitives for implementing light weight cooperative concurrency in Ruby. Basically they are a means of creating code blocks that can be paused and resumed, much like threads. The main difference is that they are never preempted and that the scheduling must be done by the programmer and not the VM.</p>
+</blockquote>
+<p>简单来说，<code>Thread</code>是系统级别的概念，其运行是VM通过抢占式的调度实现的，而<code>Fiber</code>是一种协程（coroutine）的概念，一个<code>Fiber</code>何时获得系统资源是由程序猿控制的。下面这个栗子可以帮助你回顾/了解一下<code>Fiber</code>是怎么工作的：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">fiber = Fiber.new <span class="keyword">do</span> <span class="params">|first|</span></span><br><span class="line">  second = Fiber.<span class="keyword">yield</span> first + <span class="number">2</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">puts fiber.resume <span class="number">10</span></span><br><span class="line">puts fiber.resume <span class="number">14</span></span><br><span class="line">puts fiber.resume <span class="number">18</span></span><br></pre></td></tr></table></figure>
+<p>outputs</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">12</span><br><span class="line">14</span><br><span class="line">FiberError: dead fiber called</span><br></pre></td></tr></table></figure>
+<p>如果你已经了解了<code>Fiber</code>是如何工作的，我们可以来看看Goliath中是如何使用<code>Fiber</code>实现Non-Callback异步执行的</p>
+<h3 id="EM-Synchrony"><a href="#EM-Synchrony" class="headerlink" title="EM-Synchrony"></a>EM-Synchrony</h3><p><a href="https://github.com/igrigorik/em-synchrony" target="_blank" rel="noopener">EM-Synchrony</a>是Goliath项目的一个重要组成部分。EM-Synchrony使用Fiber改造了EventMachine以及基于EventMachine实现的许多异步I/O库，使程序猿可以以同步的代码风格实现异步的功能。</p>
+<p>每一个Goliath服务都只有一个线程，但每个用户request都是在一个独立的<code>Fiber</code>中处理的，我们可以看看之前的<code>EM::HttpRequest</code>究竟是如何实现的：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># em-synchrony/lib/em-synchrony/em-http.rb</span></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">  <span class="keyword">require</span> <span class="string">"em-http-request"</span></span><br><span class="line"><span class="keyword">rescue</span> LoadError =&gt; error</span><br><span class="line">  raise <span class="string">"Missing EM-Synchrony dependency: gem install em-http-request"</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">module</span> <span class="title">EventMachine</span></span></span><br><span class="line">  <span class="class"><span class="keyword">module</span> <span class="title">HTTPMethods</span></span></span><br><span class="line">     <span class="string">%w[get head post delete put patch options]</span>.each <span class="keyword">do</span> <span class="params">|type|</span></span><br><span class="line">       class_eval <span class="string">%[</span></span><br><span class="line"><span class="string">         alias :a<span class="subst">#&#123;type&#125;</span> :<span class="subst">#&#123;type&#125;</span></span></span><br><span class="line"><span class="string">         def <span class="subst">#&#123;type&#125;</span>(options = &#123;&#125;, &amp;blk)</span></span><br><span class="line"><span class="string">           f = Fiber.current</span></span><br><span class="line"><span class="string">           conn = setup_request(:<span class="subst">#&#123;type&#125;</span>, options, &amp;blk)</span></span><br><span class="line"><span class="string">           if conn.error.nil?</span></span><br><span class="line"><span class="string">             conn.callback &#123; f.resume(conn) &#125;</span></span><br><span class="line"><span class="string">             conn.errback  &#123; f.resume(conn) &#125;</span></span><br><span class="line"><span class="string">             Fiber.yield</span></span><br><span class="line"><span class="string">           else</span></span><br><span class="line"><span class="string">             conn</span></span><br><span class="line"><span class="string">           end</span></span><br><span class="line"><span class="string">         end</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>ah~, Monkey Patch，在<code>get</code>方法新的实现中，<code>callback</code>会<code>resume</code>相应的<code>Fiber</code>，从而使得处理该用户请求的<code>Fiber</code>重新获得系统资源，并在之前调用<code>get</code>方法的地方继续执行。这样对程序猿来说就只需要以同步的方式编写业务代码即可。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2018/06/21/goliath-non-blocking-ruby-web-server-framework/" data-id="cjin9dw2r000b6utnkmruhaf9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web-server/">web server</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-html5-geolocation-in-china" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/06/html5-geolocation-in-china/" class="article-date">
+  <time datetime="2015-05-06T11:54:08.000Z" itemprop="datePublished">2015-05-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/06/html5-geolocation-in-china/">HTML5 Geolocation in China</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>HTML5 Geolocation API允许用户在Web应用中共享他们的位置，使其能够享受LBS应用所带来的独特魅力。HTML5 Geolocation API的使用方法相当简单（仅限地球^_^）。请求共享位置信息，如果用户同意，浏览器就会返回位置信息（主要是十进制的经纬度），该位置信息是通过支持HTML5地理定位功能的底层设备（如笔记本、手机）提供给浏览器的。</p>
+<h2 id="信息来源"><a href="#信息来源" class="headerlink" title="信息来源"></a>信息来源</h2><p>底层设备通常可以通过哪些数据源来获取位置信息呢？</p>
+<ul>
+<li>IP地址</li>
+<li>坐标定位<ul>
+<li>GPS</li>
+<li>基站辅助定位</li>
+</ul>
+</li>
+</ul>
+<p>IP地址定位随处可以使用，但定位不精确，甚至可能出现非常离谱的定位结果；GPS定位非常精确，但需要额外的硬件设备，耗时长，而且室内效果很差；基站辅助定位精度较为精确，定位快速且可以在室内使用。</p>
+<h2 id="如何使用HTML5-Geolocation-API"><a href="#如何使用HTML5-Geolocation-API" class="headerlink" title="如何使用HTML5 Geolocation API"></a>如何使用HTML5 Geolocation API</h2><p>HTML5 Geolocation API是通过<code>navigator.geolocation</code>对象暴露给Web应用的，用户使用时可以有两种方式：单次定位请求，周期定位请求。</p>
+<h3 id="单次定位"><a href="#单次定位" class="headerlink" title="单次定位"></a>单次定位</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options);</span><br></pre></td></tr></table></figure>
+<p>如果浏览器获取位置信息成功，则会调用<code>successCallback</code>并传入<code>Position</code>对象</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Position object</span></span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    timestamp: <span class="string">"位置信息的获取时间"</span>,</span><br><span class="line">    coords: &#123;</span><br><span class="line">        latitude: <span class="string">"维度（十进制）"</span>,</span><br><span class="line">        longitude: <span class="string">"精度（十进制）"</span>,</span><br><span class="line">        accuracy: <span class="string">"准确度（以m为单位，置信度95%）"</span>,</span><br><span class="line">        altitude: <span class="string">"海拔（以m为单位）"</span>,</span><br><span class="line">        altitudeAccuracy: <span class="string">"海拔准确度（以m为单位，置信度95%）"</span>,</span><br><span class="line">        heading: <span class="string">"行进方向（相对于正北）"</span>,</span><br><span class="line">        speed: <span class="string">"速度（m/s）"</span></span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关于定位请求选项<code>options</code>，可以以<code>map</code>的形式传入如下参数的组合</p>
+<ul>
+<li>enableHighAccuracy，高精度模式，true/false(default);</li>
+<li>timeout，设置定位超时时间，ms;</li>
+<li>maximumAge，设置浏览器重新定位的时间间隔，ms;</li>
+</ul>
+<h3 id="周期定位"><a href="#周期定位" class="headerlink" title="周期定位"></a>周期定位</h3><p>如果用户希望随时获得浏览器定位信息的更新，则可以使用周期定位接口，接口的使用方法与单次定位完全一致。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">navigator.geolocation.watchPosition(successCallback, errorCallback, options);</span><br></pre></td></tr></table></figure>
+<p>唯一不同的一点是，该接口提供了取消定位通知的功能</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, options);</span><br><span class="line"></span><br><span class="line">navigator.geolocation.clearWatch(watchId);</span><br></pre></td></tr></table></figure>
+<h2 id="地球坐标，火星坐标，XX坐标"><a href="#地球坐标，火星坐标，XX坐标" class="headerlink" title="地球坐标，火星坐标，XX坐标"></a>地球坐标，火星坐标，XX坐标</h2><p>好简单啊，是么？！</p>
+<p>不过在天朝，使用HTML5 Geolocation API就没那么简单了，如果你尝试着将自己当前位置的经纬度绘制在百度地图上，你会发现自己可能正在某个楼顶，马路中间，甚至是湖中间…发生了什么。</p>
+<p>这里不得不从地球坐标和火星坐标说起，用户通过HTML5 Geolocation获取的经纬度信息是国际通用的WGS84坐标系统，俗称为地球坐标。而我国国测局出于安全的目的，要求境内所有地图和位置信息数据必须通过加密算法进行非线性偏移，这就是GCJ-02坐标体系，也就是大家常说的火星坐标。再进一步，国内一些地图服务提供商出于响应国家政策以及自身商业目的原因，又在此基础上进行了二次加密，如百度的BD-09坐标系统等。</p>
+<h3 id="坐标系列表"><a href="#坐标系列表" class="headerlink" title="坐标系列表"></a>坐标系列表</h3><p>国内各大LBS都在用什么坐标系统呢</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">API</th>
+<th style="text-align:left">坐标系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">百度地图</td>
+<td style="text-align:left">百度坐标</td>
+</tr>
+<tr>
+<td style="text-align:left">腾讯搜搜地图</td>
+<td style="text-align:left">火星坐标</td>
+</tr>
+<tr>
+<td style="text-align:left">搜狗地图</td>
+<td style="text-align:left">搜狗坐标</td>
+</tr>
+<tr>
+<td style="text-align:left">阿里云地图</td>
+<td style="text-align:left">火星坐标</td>
+</tr>
+<tr>
+<td style="text-align:left">图吧MapBar地图</td>
+<td style="text-align:left">图吧坐标</td>
+</tr>
+<tr>
+<td style="text-align:left">高德MapABC地图</td>
+<td style="text-align:left">火星坐标</td>
+</tr>
+</tbody>
+</table>
+<h3 id="坐标转换"><a href="#坐标转换" class="headerlink" title="坐标转换"></a>坐标转换</h3><p>网上有大量关于在各个坐标系之间进行转换的文章甚至代码，这里就不再重复了。但如果你恰好在使用百度地图的服务，建议直接使用<a href="http://developer.baidu.com/map/index.php?title=webapi/guide/changeposition" target="_blank" rel="noopener">百度坐标转换API</a>来将各种坐标系数据转换为百度坐标。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2015/05/06/html5-geolocation-in-china/" data-id="cjin9dw2o00096utnv21v0uki" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/geolocation/">geolocation</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/html5/">html5</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-html5-web-worker" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/05/html5-web-worker/" class="article-date">
+  <time datetime="2015-04-05T10:11:03.000Z" itemprop="datePublished">2015-04-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/05/html5-web-worker/">HTML5 - Web Worker</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Javascript是单线程的。因此，持续时间较长的计算会阻塞UI线程，进而导致用户无法正常使用页面中的功能，并且在大多数浏览器中，除非控制权返回，否则甚至无法打开新的标签页。HTML5 Web Worker正是这类问题的解决方案，Web Worker可以使得web页面具备后台处理能力，它对多线程的支持非常好，因此，使用了Web Worker的web应用可以充分利用多核CPU带来的优势。</p>
+<h2 id="进入正题之前"><a href="#进入正题之前" class="headerlink" title="进入正题之前"></a>进入正题之前</h2><p>在决定使用Web Worker之前，你还需要了解一些信息</p>
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p>如果web应用需要执行一些后台数据处理，但又这些数据处理工作影响web页面本身的交互性，那么可以通过Web Worker去执行数据处理任务，同时添加一个事件监听器去监听和处理Web Worker发送的消息。</p>
+<p>Web Worker的另一个用途是监听由后台服务器广播的新闻信息，收到后台服务器的信息后，将其显示在Web页面上。像这种与后台服务器对话的场景中，Web Worker可能会使用到Web Socket或Server-Sent Event。</p>
+<h3 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h3><p>尽管Web Worker功能强大，但也不是万能的，有些事情是Web Worker无能为力的。例如，Web Worker中执行的脚本不能访问该页面的<code>window</code>对象，换句话说，Web Worker不能直接访问web页面和DOM API。另外，虽然Web Worker不会导致浏览器UI停止响应，但是仍然会消耗CPU周期，导致系统反应速度变慢。</p>
+<h3 id="浏览器支持"><a href="#浏览器支持" class="headerlink" title="浏览器支持"></a>浏览器支持</h3><p>Web Worker目前已被绝大多数主流浏览器所支持，推荐一个网站：<a href="http://caniuse.com" target="_blank" rel="noopener">Can I use</a>，在网站上搜索Web Worker可以查看最新的浏览器支持情况。</p>
+<h2 id="使用Web-Workers-API"><a href="#使用Web-Workers-API" class="headerlink" title="使用Web Workers API"></a>使用Web Workers API</h2><p>简而言之，使用Web Workers API需要编写两部分的JS代码：</p>
+<ul>
+<li>主页面中的JS代码 - 创建Web Worker，接收Web Worker的返回消息和错误信息</li>
+<li>Web Worker中执行的JS代码 - 处理后台任务，也可以接收主页面发来的消息</li>
+</ul>
+<h3 id="创建Web-Worker"><a href="#创建Web-Worker" class="headerlink" title="创建Web Worker"></a>创建Web Worker</h3><p>可以用两种方式创建Web Worker，一种是直接传入Web Worker所要运行的JS的URL<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">worker = <span class="keyword">new</span> Worker(<span class="string">"job.js"</span>);</span><br></pre></td></tr></table></figure></p>
+<p>如果你的浏览器支持文件系统API(<code>Blob</code>，<code>BlobBuilder</code>)，你还可以加载<code>&lt;script&gt;</code>标签中inline的JS代码来创建Web Worker，例如html页面中包含如下标签<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">id</span>=<span class="string">"worker"</span> <span class="attr">type</span>=<span class="string">"javascript/worker"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">    ...some job...</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>可以用下面的JS代码来创建Web Worker<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">blob = <span class="keyword">new</span> Blob([<span class="built_in">document</span>.getElementById(<span class="string">'worker'</span>).innerText], &#123; <span class="attr">type</span>: <span class="string">"text/javascript"</span> &#125;);</span><br><span class="line">worker = <span class="keyword">new</span> Worker(<span class="built_in">window</span>.URL.createObjectURL(blob));</span><br></pre></td></tr></table></figure></p>
+<h3 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h3><p>使用<code>postMessage</code>方法给Worker发送消息，可以是字符串或者任何JS对象<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// someData = "some text";</span></span><br><span class="line"><span class="comment">// someData = &#123;&#125;;</span></span><br><span class="line"></span><br><span class="line">worker.postMessage(someData);</span><br></pre></td></tr></table></figure></p>
+<h3 id="监听消息和错误"><a href="#监听消息和错误" class="headerlink" title="监听消息和错误"></a>监听消息和错误</h3><p>主页面可以注册Callback来接收Worker返回的消息或者抛出的错误信息<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">worker.addEventListener(<span class="string">"message"</span>, messageHandler, <span class="literal">true</span>);</span><br><span class="line">worker.addEventListener(<span class="string">"error"</span>, errorHandler, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">messageHandler</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// do something with e.data</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">errorHandler</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(e.message, e);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="销毁Web-Worker"><a href="#销毁Web-Worker" class="headerlink" title="销毁Web Worker"></a>销毁Web Worker</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">worker.terminate();</span><br></pre></td></tr></table></figure>
+<h3 id="Web-Worker导入其他JS文件"><a href="#Web-Worker导入其他JS文件" class="headerlink" title="Web Worker导入其他JS文件"></a>Web Worker导入其他JS文件</h3><p>如果Web Worker中要执行复杂的处理任务，可能还需要导入其他JS文件<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">importScripts(<span class="string">"someLib.js"</span>, <span class="string">"otherLib.js"</span>);</span><br></pre></td></tr></table></figure></p>
+<h3 id="接收主页面消息"><a href="#接收主页面消息" class="headerlink" title="接收主页面消息"></a>接收主页面消息</h3><p>Web Worker同样可以监听主页面发来的消息，方式与主页面监听消息是相同的<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">addEventListener(<span class="string">"message"</span>, messageHandler, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">messageHandler</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// do something with e.data</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="向主页面发送消息"><a href="#向主页面发送消息" class="headerlink" title="向主页面发送消息"></a>向主页面发送消息</h3><p>Web Worker可以向主页面发送任务运行的结果或中间状态等，其方式与主页面发送消息的方式也是相同的<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">worker.postMessage(someData);</span><br></pre></td></tr></table></figure></p>
+<h2 id="举个栗子"><a href="#举个栗子" class="headerlink" title="举个栗子"></a>举个栗子</h2><p>一个基于Canvas的图像模糊应用，实现方法是不断对图像中的每个像素点与周围的8个像素点进行线性模糊。由于图像模糊运算任务被分配给一个或多个Web Worker在后台执行，大家可以看到无论是log打印，还是按钮的交互都没有受到影响。请查看<a href="https://github.com/JustinFeng/web-worker-blur" target="_blank" rel="noopener">源代码</a>或试试<a href="http://justinfeng.github.io/web-worker-blur/blur.html">Live Demo</a>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2015/04/05/html5-web-worker/" data-id="cjin9dw2m00086utnbd95mbbk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/html5/">html5</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web-worker/">web_worker</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-image-overlap-in-email" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2013/04/25/image-overlap-in-email/" class="article-date">
+  <time datetime="2013-04-25T13:22:00.000Z" itemprop="datePublished">2013-04-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/04/25/image-overlap-in-email/">Image Overlap in Email</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Web前端需要使用到图片叠放的应用场景有很多，一个比较典型的情况是在Youtube视频的预览图片上添加一个Play按钮，上网搜索一下就会发现有很多方式可以将一个图片叠放到另一个图片上：  </p>
+<ol>
+<li>使用绝对定位，<code>position:absolute</code>；        </li>
+<li>将叠放下方的图作为背景图片；           </li>
+<li>使用负的margin将一个图片移动到另一个之上。    </li>
+<li>……</li>
+</ol>
+<p>##Email世界</p>
+<p>当你需要在Email的内容中实现图片叠放时，我不得不遗憾的告诉你：上述方法均不可行，其主要原因是在Gmail, Hotmail，YahooMail等Web邮件客户端中，诸如position，background，margin等样式都是不被支持的。</p>
+<p>如果你正在被上面提到的问题所困扰，不用着急，下面就来揭晓Email世界中的完美解决方案，不需要fancy的标签和css，你需要的只是平凡的table span。（推荐你在<a href="http://jsbin.com/" target="_blank" rel="noopener">JsBin</a>上面试试下面的Html代码以帮助理解。）</p>
+<p>##独立图片</p>
+<p>当你仅需要在一个独立的图片上叠加图片时，解决方法是相对简单的，可以利用rowspan和colspan来重合两个表格单元完成图片的叠放：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">table</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span><span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span> <span class="attr">rowspan</span>=<span class="string">2</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span> <span class="attr">colspan</span>=<span class="string">2</span> <span class="attr">style</span>=<span class="string">"text-align: center"</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aquamarine; width:60px; height:45px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">table</span>&gt;</span> </span><br></pre></td></tr></table></figure></p>
+<p>效果如下：<br><img src="/images/email-image-1.png" alt="email_image_1"></p>
+<p>##一组图片</p>
+<p>当你需要给一组图片中的一张上叠加图片时，事情会变的稍微有些复杂，此时你可能发现使用上面的办法会破坏该图片与其他图片的对齐，大多数情况会有令人恼火的1px偏移，试试下面的代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">table</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">table</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">td</span>&gt;</span><span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">td</span> <span class="attr">rowspan</span>=<span class="string">2</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">td</span> <span class="attr">colspan</span>=<span class="string">2</span> <span class="attr">style</span>=<span class="string">"text-align: center"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aquamarine; width:60px; height:45px"</span>/&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>效果如下：<br><img src="/images/email-image-2.png" alt="email_image_2"></p>
+<p>一个可行的解决方案是在所有要对齐的图片上都应用上相同的table span结构，试试下面的解决代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">table</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span> <span class="attr">rowspan</span>=<span class="string">2</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span><span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span> <span class="attr">rowspan</span>=<span class="string">2</span>&gt;</span></span><br><span class="line">   	  <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span> <span class="attr">colspan</span>=<span class="string">2</span> <span class="attr">style</span>=<span class="string">"text-align: center"</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aquamarine; width:60px; height:45px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">   	<span class="tag">&lt;<span class="name">td</span> <span class="attr">rowspan</span>=<span class="string">2</span>&gt;</span></span><br><span class="line">   	  <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span><span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span> <span class="attr">rowspan</span>=<span class="string">2</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">img</span> <span class="attr">style</span>=<span class="string">"border: 1px solid;background-color: aqua; width:200px; height:150px"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>效果如下：<br><img src="/images/email-image-3.png" alt="email_image_3"></p>
+<p>相信你可以将这种模式推广应用于其他更加复杂的场景：）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2013/04/25/image-overlap-in-email/" data-id="cjin9dw2j00056utncip6ocwm" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/email/">email</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/html/">html</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-rspec-matchers" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/10/29/rspec-matchers/" class="article-date">
+  <time datetime="2012-10-29T10:09:00.000Z" itemprop="datePublished">2012-10-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/10/29/rspec-matchers/">RSpec Matchers</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>RSpec是Ruby世界所熟知的测试框架，它可以用于<strong>单元测试</strong>及<strong>功能测试</strong>（与Cucumber配合）。与其他测试框架一样，完成测试功能、实现红绿循环的核心是断言语句，而RSpec的断言是通过<code>{}.should</code>、<code>expect{...}.to</code>+Matcher实现的。下面就总结一下RSpec内建的Matcher以及如何定制自己的Matcher。</p>
+<p>##内建Matcher</p>
+<p>###include</p>
+<p>数组中是否包含某元素<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">milan_players.should <span class="keyword">include</span>(<span class="string">'Maldini'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>###respond_to</p>
+<p>对象是否有某个方法<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'Milan'</span>.should respond_to(<span class="symbol">:length</span>)</span><br></pre></td></tr></table></figure></p>
+<p>###raise_error, throw_symbol</p>
+<p>代码执行时是否抛出异常，如果不传参数则验证任意异常的抛出；如果给一个参数，可以是某个具体的异常类或者异常描述（支持正则匹配）；当然也可以给两个参数，第一个为异常类，第二个为异常描述<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lambda &#123; Object.new.explode! &#125;.should raise_error(NameError)</span><br></pre></td></tr></table></figure></p>
+<p>###==, ===, equal, eql</p>
+<p>上述几个Matcher用于测试相等，其效果与Ruby中对应的操作符或方法相同<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="number">3</span> * <span class="number">5</span>).should == <span class="number">15</span></span><br></pre></td></tr></table></figure></p>
+<p>注意：RSpec不建议使用<code>!=</code>，可以用<code>should_not ==</code>代替</p>
+<p>###be_close</p>
+<p>可以用来测试浮点型数据是否相差在某个误差内<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">result.should be_close(<span class="number">5.25</span>, <span class="number">0</span>.<span class="number">005</span>)</span><br></pre></td></tr></table></figure></p>
+<p>###match, =~</p>
+<p>验证正则表达式匹配<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">result.should =~ <span class="regexp">/this expression/</span></span><br></pre></td></tr></table></figure></p>
+<p>###change</p>
+<p>判断数值变化，相关使用方法非常接近自然语言，不多做解释，看例子<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">expect &#123;</span><br><span class="line">  User.create!(<span class="symbol">:role</span> =&gt; <span class="string">"admin"</span>)</span><br><span class="line">&#125;.to change&#123; User.admins.count &#125;</span><br><span class="line"></span><br><span class="line">expect &#123;</span><br><span class="line">  User.create!(<span class="symbol">:role</span> =&gt; <span class="string">"admin"</span>)</span><br><span class="line">&#125;.to change&#123; User.admins.count &#125;.by(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">expect &#123;</span><br><span class="line">  User.create!(<span class="symbol">:role</span> =&gt; <span class="string">"admin"</span>)</span><br><span class="line">&#125;.to change&#123; User.admins.count &#125;.to(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">expect &#123;</span><br><span class="line">  User.create!(<span class="symbol">:role</span> =&gt; <span class="string">"admin"</span>)</span><br><span class="line">&#125;.to change&#123; User.admins.count &#125;.from(<span class="number">0</span>).to(<span class="number">1</span>)</span><br></pre></td></tr></table></figure></p>
+<p>###布尔Matcher</p>
+<p>当一个对象中有布尔方法<code>XXX?</code>，则RSpec会自动为其生成如下的几个Matcher</p>
+<pre><code>be_XXX
+be_a_XXX
+be_an_XXX
+</code></pre><p>###be_true(false)</p>
+<p>用来断言真假时，还可以直接使用如下的Matcher</p>
+<pre><code>be_true
+be_false
+</code></pre><p>###have开头的布尔Matcher</p>
+<p>当一个对象中有<code>has_XXX?</code>方法时，RSpec会为其自动生成<code>have_XXX</code>的Matcher<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">request_parameters.should have_key(<span class="symbol">:id</span>)</span><br></pre></td></tr></table></figure></p>
+<p>补充：为了使断言语句更加接近自然语言，如果在Matcher上调用不存在的方法，该方法会被代理到Matcher所传给的目标对象，漂亮的语法糖<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">home_team.should have(<span class="number">9</span>).players_on(field)</span><br></pre></td></tr></table></figure></p>
+<p>###集合Matcher</p>
+<p>对于集合对象来说，还有几个内建的Matcher非常直观和实用<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">day.should have_exactly(<span class="number">24</span>).hours</span><br><span class="line">dozen_bagels.should have_at_least(<span class="number">12</span>).bagels</span><br><span class="line">internet.should have_at_most(<span class="number">2037</span>).killer_social_networking_apps</span><br></pre></td></tr></table></figure></p>
+<p>###运算符Matcher</p>
+<p>处理前面提到的一些运算符Matcher之外，常用的还有<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">result.should be &lt; <span class="number">7</span></span><br><span class="line">result.should be &lt;= <span class="number">7</span></span><br><span class="line">result.should be &gt;= <span class="number">7</span></span><br><span class="line">result.should be &gt; <span class="number">7</span></span><br></pre></td></tr></table></figure></p>
+<p>##定制Matcher</p>
+<p>如果RSpec内建提供的Matcher不能满足需求，你还可以自己定制专用的Matcher，具体的定义方法如下<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">RSpec::Matcher.define <span class="symbol">:report_to</span> <span class="keyword">do</span> <span class="params">|boss|</span></span><br><span class="line">  match <span class="keyword">do</span> <span class="params">|employee|</span></span><br><span class="line">    employee.reports_to?(boss)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  failure_message_for_should <span class="keyword">do</span> <span class="params">|employee|</span></span><br><span class="line">    <span class="string">"expected the team run by <span class="subst">#&#123;boss&#125;</span>"</span> to <span class="keyword">include</span> <span class="comment">#&#123;employee&#125;"</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  failure_message_for_should_not <span class="keyword">do</span> <span class="params">|employee|</span></span><br><span class="line">    <span class="string">"expected the team run by <span class="subst">#&#123;boss&#125;</span>"</span> to exclude <span class="comment">#&#123;employee&#125;"</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  description <span class="keyword">do</span></span><br><span class="line">    <span class="string">"expected a member of the team run by <span class="subst">#&#123;boss&#125;</span>"</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure></p>
+<p>上面代码中给出了定义一个Matcher较为完整的方式，定义中的4个块传递并不都是必须的，要完成一个Matcher的定义必须提供的内容为<code>match</code>块和<code>failure_message_for_should</code>块，另外两个块是可选的。</p>
+<p>掌握了自定义Matcher的方法，相信从技术上应该没有什么断言语句是你写不出来的喽：）    </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2012/10/29/rspec-matchers/" data-id="cjin9dw2i00046utn8us064pt" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rspec/">rspec</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-ruby-class-secret-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/09/22/ruby-class-secret-2/" class="article-date">
+  <time datetime="2012-09-22T13:30:00.000Z" itemprop="datePublished">2012-09-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/09/22/ruby-class-secret-2/">Ruby Class Secret(Part II)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>让我们继续探索Ruby的Class</p>
+<p>##类定义</p>
+<p>静态语言中，类的定义给人的感觉更多是在定义一种数据结构，及该结构上的一系列行为，只有实例化一个对象的时候，其代码才真正的生效或者被执行。而Ruby则不同，<code>class</code>关键字之后，实际就是在执行一段普通的代码，举个例子<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span></span></span><br><span class="line">  puts <span class="string">'Hello!'</span>	<span class="comment"># Hello!</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure><br>运行该脚本，除了定义<code>MyClass</code>类之外，还会直接在控制台输出字符串。</p>
+<p>##类实例变量&amp;类方法</p>
+<p>先看一段代码<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span></span></span><br><span class="line">  @my_var = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">read</span></span></span><br><span class="line">    @my_var</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure><br>大家一定要注意<code>@my_var</code>可不是这个类的对象的实例变量，而是<code>MyClass</code>类的实例变量。实例变量的归属取决于上下文，在<code>class</code>关键字后，<code>self</code>所代表的当前对象是<code>MyClass</code>，<strong>类也是对象</strong>。也许你会觉得类实例变量类似于Java中的静态成员，但事实并非如此，类实例变量与对象实例变量处于完全不同的两个上下文，普通的对象无法访问类实例变量，但Java中类的对象可以访问类的静态成员（Ruby中类似的概念应该是<code>@@</code>开头的变量，但这种变量不推荐使用）。再进一步，类实例变量完全是该类独有的，即使是该类的子类也看不到这个变量。</p>
+<p><code>MyClass</code>中定义的<code>read</code>方法也不是普通的实例方法，而是类方法，由于类方法的方法体内处于类的上下文中，可以访问到类实例变量。</p>
+<p>##单件方法</p>
+<p>Ruby允许你为某个具体对象添加一个方法，这种方法即为单件方法，定义单件方法的方式如下<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">str = <span class="string">"just a regular string"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">str</span>.<span class="title">title?</span></span></span><br><span class="line">  <span class="keyword">self</span>.upcase == <span class="keyword">self</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">str.title?	<span class="comment"># false</span></span><br></pre></td></tr></table></figure><br>其实上节中的类方法也是一个单件方法，与上面的例子稍有不同的是，该方法添加在了一个类上，这里又要强调了，<strong>类也是对象</strong>，因此本质是完全一样的。类方法的一个应用就是在<code>Module</code>中定义的访问器（attr_accessor等）。</p>
+<p>##终极藏宝图</p>
+<p>引入了单件方法的概念后，我们有必要重新审视一下类与对象的关系图，单件方法应该存在于哪里呢<br><img src="/images/method_finding.png" alt="class_and_object_3"></p>
+<p>看来类的真相<a href="!--￼4--" title="Ruby类的真相(上)">上篇</a>。中获得的藏宝图并不全，Ruby刻意隐藏了一些内幕，让我们发掘发掘，单件方法在哪里呢？答案是eigenclass。每一个对象对应一个特有的隐藏类，这个类就是eigenclass，该类只有一个实例，且不能被继承，单件方法就存在于eigenclass中，后续表述中将一个对象<code>obj</code>对应eigenclass记为<code>#obj</code>。以下面的代码为例<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">a_method</span></span></span><br><span class="line">    <span class="string">'C#a_method'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">a_class_method</span></span></span><br><span class="line">    <span class="string">'C.a_class_method'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span> &lt; C;</span> <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">obj = D.new</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">obj</span>.<span class="title">a_singleton_method</span></span></span><br><span class="line">  <span class="string">'obj#a_singleton_method'</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure><br>当方法查找过程向一个对象索要类时，你首先得到的是该对象的eigenclass，如果eigenclass中没有要调用的方法才会继续沿着原有祖先链向上查找<br><img src="/images/method_finding_with_eigenclass.png" alt="class_and_object_4"></p>
+<p>调用一个类的类方法时，方法查找的过程也类似，首先会向右一步进入该类的eigenclass，再向上，这里还有一个知识点就是<strong>eigenclass的超类就是超类的eigenclass</strong>，完整藏宝图如下<br><img src="/images/everything.png" alt="class_and_object_5"></p>
+<p>##心法口诀</p>
+<p>总结一下类的真相，共有7招：  </p>
+<ol>
+<li>只有一种对象——要么是普通对象，要么是模块、类；        </li>
+<li>只有一种模块——可以是普通模块、类、eigenclass；           </li>
+<li>只有一个方法，它存在于一种模块中——通常是类中；          </li>
+<li>每个对象（包括类）都有自己的“真正的类”——要么是普通类，要么是eigenclass；        </li>
+<li>除了BasicObject类无超类外，每个类有且只有一个超类。这意味着从任何类只有一条向上直到BasicObject的祖先链；      </li>
+<li>一个对象的eigenclass的超类是这个对象的类；一个类的eigenclass的超类是这个类的超类的eigenclass；        </li>
+<li>当调用一个方法，Ruby先向“右”迈一步进入接收者真正的类，然后向“上”进入祖先链。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2012/09/22/ruby-class-secret-2/" data-id="cjin9dw2g00036utn3h34tprl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-ruby-class-secret-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/09/06/ruby-class-secret-1/" class="article-date">
+  <time datetime="2012-09-06T13:25:00.000Z" itemprop="datePublished">2012-09-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/09/06/ruby-class-secret-1/">Ruby Class Secret(Part I)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。</p>
+<p>因此在这里想跟大家分享一点Ruby语言的<strong>元编程</strong>特性，特别是Ruby类背后的故事。</p>
+<p>##打开类</p>
+<p>关于打开类，先看一个简单的例子<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Fijo</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">x</span>;</span> <span class="string">'x'</span>; <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Fijo</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">y</span>;</span> <span class="string">'y'</span>; <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">obj = Fijo.new</span><br><span class="line">obj.x 	<span class="comment"># 'x'</span></span><br><span class="line">obj.y 	<span class="comment"># 'y'</span></span><br></pre></td></tr></table></figure></p>
+<p>上面是一个最简单的打开类的实例，你可以将第一个<code>class</code>认为是定义一个不存在的类，但怎么理解第二个<code>class</code>的工作方式呢？</p>
+<p>从某种意义上来说Ruby的<code>class</code>关键字更像是一个作用域操作符，而不是一个类型声明语句。它的确可以创建一个不存在的类，但对于<code>class</code>关键字，其核心任务是将你带到<strong>类的上下文</strong>中，让你可以修改类的行为。</p>
+<p>如果你的工作中仅使用一些静态语言，如Java, C++等，打开类这样的特性一定让你感到耳目一新。但我不得不将你拉回现实，事物都有两面性，打开类也会引发严重的问题，<strong>猴子补丁</strong>就是其中之一，有兴趣的童鞋可以Google之。</p>
+<p>##对象中有什么</p>
+<p>先来一段code<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">my_method</span></span></span><br><span class="line">    @v=<span class="number">1</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">obj=MyClass.new</span><br><span class="line">obj.my_method</span><br></pre></td></tr></table></figure><br>与其他静态语言不同，Ruby中类的实例并不会在初始化时获得所有的实例变量，而仅在对某实例变量赋值后才会生成，以上面的代码为例，<code>obj</code>在被初始化时还没有实例变量<code>@v</code>，但执行<code>my_method</code>后，<code>@v</code>就生成了。</p>
+<p>而实例方法则不同，它们存在与对象所属的类中。这里有一个概念，就是一个对象的方法称为其类的实例方法。相应的关系可以用下图来描述，后续关于Ruby类故事的主线就是对这个图的演进：<br><img src="/images/var_in_object.png" alt="class_and_object_1"></p>
+<p>##类也是对象</p>
+<p>类也是对象，类的类是<code>Class</code>，因此所有适用于对象的的规则，也同样适用于类。既然一个对象的方法是其类的实例方法，这就意味着一个类的方法是<code>Class</code>的实例方法（至少目前可以仅仅这样理解:)）。</p>
+<p>另外，虽然可能会让你有些混乱，但还是要将类关系补充完整，在继承关系中，<code>Class</code>的父类是<code>Module</code>，<code>Module</code>的父类是<code>Object</code>，<code>Object</code>的类是<code>Class</code>，<code>Class</code>的类是其自身。<br><img src="/images/class_is_object.png" alt="class_and_object_2"></p>
+<p>##方法查找</p>
+<p>当一个对象调用一个方法时，首先需要做的就是方法查找，为了了解方法查找的过程，需要先了解两个概念：<strong>接收者</strong>和<strong>祖先链</strong>。<strong>接收者</strong>就是调用方法的那个对象；<strong>祖先链</strong>则是从对象的类到<code>Object</code>的类路径。</p>
+<p>方法查找的过程就是首先在对象所在类中查找被调用的方法，如果无法找到则在一层层的祖先链中查找，如果直到<code>Object</code>都无法找到对应的方法，则会调用神奇的<code>method_missing</code>方法。这个方法查找的过程可以总结为“向右一步，再向上”。<br><img src="/images/method_finding.png" alt="class_and_object_3"></p>
+<p>这里需要额外说明一点，这里的祖先链也包括模块，一个类所包含的模块会被插入到祖先链中该类与超类（或模块）之间。</p>
+<hr>
+<p>到这里已经介绍了对于Ruby类与对象的基本知识，但进一步的内容还请移步<a href="!--￼2--" title="Ruby类的真相(下)">下篇</a>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2012/09/06/ruby-class-secret-1/" data-id="cjin9dw2a00016utn9qpdyp81" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-markdown-grammar-summary" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2012/09/02/markdown-grammar-summary/" class="article-date">
+  <time datetime="2012-09-02T10:40:00.000Z" itemprop="datePublished">2012-09-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2012/09/02/markdown-grammar-summary/">Markdown Grammar Summary</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Markdown的最初目标是让网络上的阅读和写作都更加方便快捷。所有的Markdown符号都使用的标点符号，可以说它是一个专门用于网络写作的技术，这个博客就是使用Markdown来编写的。</p>
+<p>Markdown主要涵盖了Html中文本相关的功能，如果希望在Markdown中使用其他更加绚丽的表现方式，最简单的方法就是直接内联嵌入Html代码。这里提醒一点，对于\<div>、\<table>、\<pre>和\<p>，必须在标签的前后保留空格，便于Markdown的解释器辨识，但这些标签中不能再嵌入Markdown代码。  </p>
+<p>##换行</p>
+<p>在行末增加2个以上的空格可以实现换行</p>
+<p>##标题</p>
+<p>行首插入<code>#</code>来创建标题，<code>#</code>个数决定标题级别</p>
+<pre><code># This is H1
+## This is H2
+</code></pre><p>##引用</p>
+<p>在行首加入<code>&gt;</code>来创建引用，引用中还可以创建其他Markdown标记，甚至是引用</p>
+<pre><code>&gt; Quote block
+</code></pre><p>##列表</p>
+<p>使用<code>*</code>创建无序列表，使用数字加英文句号<code>x.</code>创建有序列表，注意这里列表符号和文字内容之间要有2个空格</p>
+<pre><code>*  ul
+1.  ol
+</code></pre><p>##代码</p>
+<p>使用tab创建一个代码片段（No example）</p>
+<p>##行内代码</p>
+<p>使用撇号<code>`</code>包围内容创建行内的代码块</p>
+<pre><code>Try this `code` on your console
+</code></pre><p>##分割线</p>
+<p>使用3个或以上的减号<code>---</code>创建一个分割线</p>
+<pre><code>---
+</code></pre><p>##链接</p>
+<p>方括号内是链接文字，小括号内是url，双引号内是链接的提示</p>
+<pre><code>[JustinFeng](http://justinfeng.github.io/ &quot;Blog&quot;)
+</code></pre><p>##直接链接</p>
+<p>使用尖括号包围url创建直接链接</p>
+<pre><code>&lt;http://justinfeng.github.io&gt;
+</code></pre><p>##强调</p>
+<p>单<code>*</code>包围实现强调，双<code>**</code>包围实现加粗</p>
+<pre><code>*emphasis*
+**strong**
+</code></pre><p>##图片</p>
+<p>使用下面格式创建一个图片</p>
+<pre><code>![Alt text](/path/to/img.jpg)
+</code></pre><p>##转义</p>
+<p>在使用Markdown时如果需要使用特殊符号，同样可以使用<code>\</code>进行转义处理</p>
+<p>##写在最后</p>
+<p>本文以简洁的方式列出了Markdown中最常用的标记和语法，目的是让读者<strong>快速上手</strong>，或者进行<strong>速查</strong>。完整内容请深入学习<a href="http://daringfireball.net/projects/markdown/syntax" title="Markdown" target="_blank" rel="noopener">Markdown</a></p>
+</pre></table></div></p>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://justinfeng.github.io/2012/09/02/markdown-grammar-summary/" data-id="cjin9dw2400006utnlta00d1k" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/markdown/">markdown</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/email/">email</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/geolocation/">geolocation</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html5/">html5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/markdown/">markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-server/">web server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web-worker/">web_worker</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/email/" style="font-size: 10px;">email</a> <a href="/tags/geolocation/" style="font-size: 10px;">geolocation</a> <a href="/tags/html/" style="font-size: 10px;">html</a> <a href="/tags/html5/" style="font-size: 15px;">html5</a> <a href="/tags/markdown/" style="font-size: 10px;">markdown</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 20px;">ruby</a> <a href="/tags/web-server/" style="font-size: 10px;">web server</a> <a href="/tags/web-worker/" style="font-size: 10px;">web_worker</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">May 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">April 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/04/">April 2013</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/10/">October 2012</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/09/">September 2012</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/06/21/goliath-non-blocking-ruby-web-server-framework/">Goliath - Non Blocking Ruby Web Server Framework</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/06/html5-geolocation-in-china/">HTML5 Geolocation in China</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/05/html5-web-worker/">HTML5 - Web Worker</a>
+          </li>
+        
+          <li>
+            <a href="/2013/04/25/image-overlap-in-email/">Image Overlap in Email</a>
+          </li>
+        
+          <li>
+            <a href="/2012/10/29/rspec-matchers/">RSpec Matchers</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Justin Feng<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
