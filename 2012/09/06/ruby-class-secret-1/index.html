@@ -5,26 +5,26 @@
   
 
   
-  <title>Ruby Class Secret(Part I) | Hexo</title>
+  <title>Ruby Class Secret(Part I) | IamRubyist</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
 <meta name="keywords" content="ruby">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Ruby Class Secret(Part I)">
 <meta property="og:url" content="http://justinfeng.github.io/2012/09/06/ruby-class-secret-1/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="IamRubyist">
 <meta property="og:description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="http://justinfeng.github.io/images/var_in_object.png">
 <meta property="og:image" content="http://justinfeng.github.io/images/class_is_object.png">
 <meta property="og:image" content="http://justinfeng.github.io/images/method_finding.png">
-<meta property="og:updated_time" content="2018-07-14T01:50:49.600Z">
+<meta property="og:updated_time" content="2018-07-14T02:32:16.213Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Ruby Class Secret(Part I)">
 <meta name="twitter:description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
 <meta name="twitter:image" content="http://justinfeng.github.io/images/var_in_object.png">
   
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+    <link rel="alternate" href="/atom.xml" title="IamRubyist" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -43,7 +43,7 @@
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
+        <a href="/" id="logo">IamRubyist</a>
       </h1>
       
     </div>
@@ -109,12 +109,12 @@
 <p>方法查找的过程就是首先在对象所在类中查找被调用的方法，如果无法找到则在一层层的祖先链中查找，如果直到<code>Object</code>都无法找到对应的方法，则会调用神奇的<code>method_missing</code>方法。这个方法查找的过程可以总结为“向右一步，再向上”。<br><img src="/images/method_finding.png" alt="class_and_object_3"></p>
 <p>这里需要额外说明一点，这里的祖先链也包括模块，一个类所包含的模块会被插入到祖先链中该类与超类（或模块）之间。</p>
 <hr>
-<p>到这里已经介绍了对于Ruby类与对象的基本知识，但进一步的内容还请移步<a href="!--￼2--" title="Ruby类的真相(下)">下篇</a>。</p>
+<p>到这里已经介绍了对于Ruby类与对象的基本知识，但进一步的内容还请移步<a href="/2012/09/22/ruby-class-secret-2/" title="Ruby类的真相(下)">下篇</a>。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://justinfeng.github.io/2012/09/06/ruby-class-secret-1/" data-id="cjin9dw2a00016utn9qpdyp81" class="article-share-link">Share</a>
+      <a data-url="http://justinfeng.github.io/2012/09/06/ruby-class-secret-1/" data-id="cjjkthuwa00018vtnizambcsr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li></ul>
