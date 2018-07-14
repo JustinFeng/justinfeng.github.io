@@ -7,21 +7,21 @@
   
   <title>Ruby Class Secret(Part I) | IamRubyist</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
+  <meta name="description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendclas">
 <meta name="keywords" content="ruby">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Ruby Class Secret(Part I)">
 <meta property="og:url" content="http://justinfeng.github.io/2012/09/06/ruby-class-secret-1/index.html">
 <meta property="og:site_name" content="IamRubyist">
-<meta property="og:description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
+<meta property="og:description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendclas">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="http://justinfeng.github.io/images/var_in_object.png">
 <meta property="og:image" content="http://justinfeng.github.io/images/class_is_object.png">
 <meta property="og:image" content="http://justinfeng.github.io/images/method_finding.png">
-<meta property="og:updated_time" content="2018-07-14T02:32:16.213Z">
+<meta property="og:updated_time" content="2018-07-14T03:07:06.414Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Ruby Class Secret(Part I)">
-<meta name="twitter:description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。 因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendcla">
+<meta name="twitter:description" content="提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。因此在这里想跟大家分享一点Ruby语言的元编程特性，特别是Ruby类背后的故事。 ##打开类 关于打开类，先看一个简单的例子1234567891011class Fijo  def x; &apos;x&apos;; endendclas">
 <meta name="twitter:image" content="http://justinfeng.github.io/images/var_in_object.png">
   
     <link rel="alternate" href="/atom.xml" title="IamRubyist" type="application/atom+xml">
@@ -91,8 +91,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。</p>
-<p>因此在这里想跟大家分享一点Ruby语言的<strong>元编程</strong>特性，特别是Ruby类背后的故事。</p>
+        <p>提起Ruby，大家更多会联想到Rails，正是Rails的蓬勃发展，使得Ruby为更多的Coder所熟悉。但换位思考一下，如果不是Ruby语言特性的灵活，又怎么会有Rails的敏捷。因此在这里想跟大家分享一点Ruby语言的<strong>元编程</strong>特性，特别是Ruby类背后的故事。</p>
 <p>##打开类</p>
 <p>关于打开类，先看一个简单的例子<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Fijo</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">x</span>;</span> <span class="string">'x'</span>; <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Fijo</span></span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">y</span>;</span> <span class="string">'y'</span>; <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">obj = Fijo.new</span><br><span class="line">obj.x 	<span class="comment"># 'x'</span></span><br><span class="line">obj.y 	<span class="comment"># 'y'</span></span><br></pre></td></tr></table></figure></p>
 <p>上面是一个最简单的打开类的实例，你可以将第一个<code>class</code>认为是定义一个不存在的类，但怎么理解第二个<code>class</code>的工作方式呢？</p>
